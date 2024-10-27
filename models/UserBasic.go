@@ -1,6 +1,8 @@
 package models
 
 import (
+	"RcChat/mapper"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"time"
 )
@@ -23,4 +25,13 @@ type UserBasic struct {
 
 func (table *UserBasic) TableName() string {
 	return "user_basic"
+}
+
+func GetUserList() []*UserBasic {
+	data := make([]*UserBasic, 10)
+	mapper.Open.Find(&data)
+	for i, _ := range data {
+		fmt.Println(i)
+	}
+	return data
 }

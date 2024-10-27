@@ -10,9 +10,9 @@ var (
 	Open *gorm.DB
 )
 
-func InitMysql() (err error) {
+func InitMysql(config string) (err error) {
 	//连接数据库
-	Open, err = gorm.Open("mysql", "root:password@(127.0.0.1:3306)/mp?charset=utf8&parseTime=True&loc=Local")
+	Open, err = gorm.Open("mysql", config)
 	if err != nil {
 		fmt.Println(err)
 		return err

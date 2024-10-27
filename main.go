@@ -1,18 +1,14 @@
 package main
 
 import (
-	"RcChat/mapper"
-	"RcChat/models"
 	"RcChat/router"
+	"RcChat/utils"
 )
 
 func main() {
-	err := mapper.InitMysql()
-	if err != nil {
-		return
-	}
-	defer mapper.Open.Close()
-	mapper.Open.AutoMigrate(&models.UserBasic{})
+	utils.InitConfig()
+	utils.InitMysql()
+
 	r := router.Router()
 	r.Run("localhost:8080")
 }
