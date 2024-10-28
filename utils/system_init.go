@@ -8,11 +8,11 @@ import (
 )
 
 func InitMysql() {
+
 	err := mapper.InitMysql(viper.GetString("mysql.dns"))
 	if err != nil {
 		return
 	}
-	defer mapper.Open.Close()
 	mapper.Open.AutoMigrate(&models.UserBasic{})
 	user := models.UserBasic{}
 	mapper.Open.Find(&user)

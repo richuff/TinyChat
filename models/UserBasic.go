@@ -28,10 +28,10 @@ func (table *UserBasic) TableName() string {
 }
 
 func GetUserList() []*UserBasic {
-	data := make([]*UserBasic, 10)
+	data := make([]*UserBasic, 3)
 	mapper.Open.Find(&data)
-	for i, _ := range data {
-		fmt.Println(i)
+	for i, v := range data {
+		fmt.Println(i, v)
 	}
 	return data
 }
