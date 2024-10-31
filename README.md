@@ -5,7 +5,7 @@
 
 ## Introduce
 
-This a project writed by gin and gorm
+This a project written by gin and gorm
 
 ## Installation
 
