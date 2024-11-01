@@ -3,7 +3,7 @@ package models
 import (
 	"RcChat/mapper"
 	"fmt"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -34,4 +34,12 @@ func GetUserList() []*UserBasic {
 		fmt.Println(i, v)
 	}
 	return data
+}
+
+func CreateUser(data *UserBasic) *gorm.DB {
+	return mapper.Open.Create(&data)
+}
+
+func DeleteUser(data *UserBasic) *gorm.DB {
+	return mapper.Open.Delete(&data)
 }

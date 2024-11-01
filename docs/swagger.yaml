@@ -10,6 +10,41 @@ paths:
             type: string
       tags:
       - 首页
+  /user/CreateUser:
+    get:
+      consumes:
+      - application/json
+      description: 新增用户接口
+      parameters:
+      - description: 用户名
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: 密码
+        in: query
+        name: password
+        required: true
+        type: string
+      - description: 第二次输入的密码
+        in: query
+        name: repassword
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+        "400":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 新增用户
+      tags:
+      - 用户模块
   /user/getUserList:
     get:
       responses:
@@ -17,6 +52,7 @@ paths:
           description: code","message"}
           schema:
             type: string
+      summary: 所有用户
       tags:
-      - 首页
+      - 用户模块
 swagger: "2.0"
