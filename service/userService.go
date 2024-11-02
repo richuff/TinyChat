@@ -3,6 +3,7 @@ package service
 import (
 	"RcChat/models"
 	"fmt"
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -38,7 +39,7 @@ func CreateUser(c *gin.Context) {
 	password := c.Query("password")
 	repassword := c.Query("repassword")
 	if password != repassword {
-		c.JSON(-1, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "两次输入的密码不一致",
 		})
 		return
@@ -78,6 +79,8 @@ func DeleteUser(c *gin.Context) {
 // @Param id formData string false "id"
 // @Param name formData string false "name"
 // @Param password formData string false "password"
+// @Param email formData string false "email"
+// @Param phone formData string false "phone"
 // @Success 200 {string} json{"code","message"}
 // @Router /user/UpdateUser [post]
 func UpdateUser(c *gin.Context) {
@@ -87,6 +90,16 @@ func UpdateUser(c *gin.Context) {
 	fmt.Println(id)
 	user.Name = c.PostForm("name")
 	user.Password = c.PostForm("password")
+	user.Email = c.PostForm("email")
+	user.Phone = c.PostForm("phone")
+	_, err := govalidator.ValidateStruct(user)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "格式错误",
+		})
+		return
+	}
 	models.UpdateUser(user)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "修改成功",

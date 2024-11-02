@@ -74,6 +74,14 @@ paths:
         in: formData
         name: password
         type: string
+      - description: email
+        in: formData
+        name: email
+        type: string
+      - description: phone
+        in: formData
+        name: phone
+        type: string
       responses:
         "200":
           description: code","message"}

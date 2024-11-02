@@ -11,8 +11,8 @@ type UserBasic struct {
 	gorm.Model
 	Name          string    /*用户名*/
 	Password      string    /*密码*/
-	Phone         string    /*电话号码*/
-	Email         string    /*邮箱*/
+	Phone         string    `valid:"matches(^1[3-9]{1}\\d{9}$)"` /*电话号码*/
+	Email         string    `valid:"email"`                      /*邮箱*/
 	Identify      string    /*验证*/
 	ClientIp      string    /*客户端ip*/
 	ClientPort    string    /*客户端端口*/
@@ -25,6 +25,10 @@ type UserBasic struct {
 
 func (table *UserBasic) TableName() string {
 	return "user_basic"
+}
+
+func FindUserByPhone(data *UserBasic) *gorm.DB {
+	return mapper.Open.Create(&data)
 }
 
 func GetUserList() []*UserBasic {
@@ -45,5 +49,5 @@ func DeleteUser(data *UserBasic) *gorm.DB {
 }
 
 func UpdateUser(data UserBasic) *gorm.DB {
-	return mapper.Open.Model(&UserBasic{}).Where("id = ?", data.ID).Updates(UserBasic{Name: data.Name, Password: data.Password})
+	return mapper.Open.Model(&UserBasic{}).Where("id = ?", data.ID).Updates(UserBasic{Name: data.Name, Password: data.Password, Email: data.Email, Phone: data.Phone})
 }
