@@ -12,8 +12,6 @@ paths:
       - 首页
   /user/CreateUser:
     get:
-      consumes:
-      - application/json
       description: 新增用户接口
       parameters:
       - description: 用户名
@@ -31,8 +29,6 @@ paths:
         name: repassword
         required: true
         type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: code","message"}
@@ -43,6 +39,47 @@ paths:
           schema:
             type: string
       summary: 新增用户
+      tags:
+      - 用户模块
+  /user/DeleteUser:
+    get:
+      description: 删除用户接口
+      parameters:
+      - description: 用户id
+        in: query
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 删除用户
+      tags:
+      - 用户模块
+  /user/UpdateUser:
+    post:
+      description: 更新用户接口
+      parameters:
+      - description: id
+        in: formData
+        name: id
+        type: string
+      - description: name
+        in: formData
+        name: name
+        type: string
+      - description: password
+        in: formData
+        name: password
+        type: string
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 更新用户
       tags:
       - 用户模块
   /user/getUserList:

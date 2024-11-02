@@ -43,3 +43,7 @@ func CreateUser(data *UserBasic) *gorm.DB {
 func DeleteUser(data *UserBasic) *gorm.DB {
 	return mapper.Open.Delete(&data)
 }
+
+func UpdateUser(data UserBasic) *gorm.DB {
+	return mapper.Open.Model(&UserBasic{}).Where("id = ?", data.ID).Updates(UserBasic{Name: data.Name, Password: data.Password})
+}

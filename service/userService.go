@@ -2,6 +2,7 @@ package service
 
 import (
 	"RcChat/models"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -25,8 +26,6 @@ func GetUserList(c *gin.Context) {
 // @Summary 新增用户
 // @Tags 用户模块
 // @Description 新增用户接口
-// @Accept json
-// @Produce json
 // @Param name query string true "用户名"
 // @Param password query string true "密码"
 // @Param repassword query string true "第二次输入的密码"
@@ -59,8 +58,6 @@ func CreateUser(c *gin.Context) {
 // @Summary 删除用户
 // @Tags 用户模块
 // @Description 删除用户接口
-// @Accept json
-// @Produce json
 // @Param id query int true "用户id"
 // @Success 200 {string} json{"code","message"}
 // @Router /user/DeleteUser [get]
@@ -71,5 +68,27 @@ func DeleteUser(c *gin.Context) {
 	models.DeleteUser(&user)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "删除成功",
+	})
+}
+
+// UpdateUser
+// @Summary 更新用户
+// @Tags 用户模块
+// @Description 更新用户接口
+// @Param id formData string false "id"
+// @Param name formData string false "name"
+// @Param password formData string false "password"
+// @Success 200 {string} json{"code","message"}
+// @Router /user/UpdateUser [post]
+func UpdateUser(c *gin.Context) {
+	user := models.UserBasic{}
+	id, _ := strconv.Atoi(c.PostForm("id"))
+	user.ID = uint(id)
+	fmt.Println(id)
+	user.Name = c.PostForm("name")
+	user.Password = c.PostForm("password")
+	models.UpdateUser(user)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "修改成功",
 	})
 }
