@@ -1,6 +1,7 @@
 package service
 
 import (
+	"RcChat/constant"
 	"RcChat/models"
 	"RcChat/utils"
 	"fmt"
@@ -81,6 +82,7 @@ func DeleteUser(c *gin.Context) {
 	user := models.UserBasic{}
 	id, _ := strconv.ParseInt(c.Query("id"), 10, 64)
 	user.ID = uint(id)
+
 	models.DeleteUser(&user)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "删除成功",
@@ -108,17 +110,16 @@ func UpdateUser(c *gin.Context) {
 	user.Email = c.PostForm("email")
 	user.Phone = c.PostForm("phone")
 	_, err := govalidator.ValidateStruct(user)
+
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "格式错误",
-		})
+		result := constant.NewResult(0, "邮箱或手机号格式错误")
+		c.JSON(http.StatusBadRequest, result.Error())
 		return
 	}
 	models.UpdateUser(user)
-	c.JSON(http.StatusOK, gin.H{
-		"message": "修改成功",
-	})
+	result := constant.NewResult(1, "注册成功")
+	c.JSON(http.StatusOK, result.SuccessByData(user))
 }
 
 // UserLogin

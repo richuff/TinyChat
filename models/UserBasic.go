@@ -2,6 +2,7 @@ package models
 
 import (
 	"RcChat/mapper"
+	"RcChat/utils"
 	"fmt"
 	"gorm.io/gorm"
 	"time"
@@ -37,6 +38,9 @@ func FindUserByName(name string) UserBasic {
 func FindUserByNameAndPassword(name string, password string) UserBasic {
 	user := UserBasic{}
 	mapper.Open.Where("name = ? and password = ?", name, password).First(&user)
+	str := fmt.Sprintf("%d", time.Now().Unix())
+	temp := utils.MD5Encode(str)
+	mapper.Open.Model(&UserBasic{}).Where("id = ?", user.ID).Update("identify", temp)
 	return user
 }
 
