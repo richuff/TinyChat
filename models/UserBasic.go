@@ -21,14 +21,35 @@ type UserBasic struct {
 	LoginOutTime  time.Time `gorm:"column:login_out_time" json:"login_out_time"` /*退出登录时间*/
 	IsLoginOut    bool      /*是否退出*/
 	DeviceInfo    string    /*设备信息*/
+	Salt          string    /*md5加密*/
 }
 
 func (table *UserBasic) TableName() string {
 	return "user_basic"
 }
 
-func FindUserByPhone(data *UserBasic) *gorm.DB {
-	return mapper.Open.Create(&data)
+func FindUserByName(name string) UserBasic {
+	user := UserBasic{}
+	mapper.Open.Where("name = ?", name).First(&user)
+	return user
+}
+
+func FindUserByNameAndPassword(name string, password string) UserBasic {
+	user := UserBasic{}
+	mapper.Open.Where("name = ? and password = ?", name, password).First(&user)
+	return user
+}
+
+func FindUserByPhone(phone string) UserBasic {
+	user := UserBasic{}
+	mapper.Open.Where("phone = ?", phone).First(&user)
+	return user
+}
+
+func FindUserByEmail(email string) UserBasic {
+	user := UserBasic{}
+	mapper.Open.Where("email = ?", email).First(&user)
+	return user
 }
 
 func GetUserList() []*UserBasic {

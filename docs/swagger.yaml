@@ -58,6 +58,16 @@ paths:
       summary: 删除用户
       tags:
       - 用户模块
+  /user/GetUserList:
+    get:
+      responses:
+        "200":
+          description: code","message"}
+          schema:
+            type: string
+      summary: 所有用户
+      tags:
+      - 用户模块
   /user/UpdateUser:
     post:
       description: 更新用户接口
@@ -90,14 +100,24 @@ paths:
       summary: 更新用户
       tags:
       - 用户模块
-  /user/getUserList:
-    get:
+  /user/UserLogin:
+    post:
+      description: 用户登录接口
+      parameters:
+      - description: name
+        in: formData
+        name: name
+        type: string
+      - description: password
+        in: formData
+        name: password
+        type: string
       responses:
         "200":
           description: code","message"}
           schema:
             type: string
-      summary: 所有用户
+      summary: 用户登录
       tags:
       - 用户模块
 swagger: "2.0"

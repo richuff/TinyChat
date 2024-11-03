@@ -2,9 +2,11 @@ package service
 
 import (
 	"RcChat/models"
+	"RcChat/utils"
 	"fmt"
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,7 +16,7 @@ import (
 // @Summary 所有用户
 // @Tags 用户模块
 // @Success 200 {string} json{"code","message"}
-// @Router /user/getUserList [get]
+// @Router /user/GetUserList [get]
 func GetUserList(c *gin.Context) {
 	data := make([]*models.UserBasic, 10)
 	data = models.GetUserList()
@@ -38,13 +40,26 @@ func CreateUser(c *gin.Context) {
 	user.Name = c.Query("name")
 	password := c.Query("password")
 	repassword := c.Query("repassword")
+
+	slat := fmt.Sprintf("%06d", rand.Int31())
+
+	data := models.FindUserByName(user.Name)
+	if data.Name != "" {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "该用户名已注册",
+		})
+		return
+	}
+
 	if password != repassword {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "两次输入的密码不一致",
 		})
 		return
 	}
-	user.Password = password
+	/*user.Password = password*/
+	user.Salt = slat
+	user.Password = utils.MakePassword(password, slat)
 	user.LoginTime = time.Now()
 	user.CreatedAt = time.Now()
 	user.HeartBeatTime = time.Now()
@@ -103,5 +118,36 @@ func UpdateUser(c *gin.Context) {
 	models.UpdateUser(user)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "修改成功",
+	})
+}
+
+// UserLogin
+// @Summary 用户登录
+// @Tags 用户模块
+// @Description 用户登录接口
+// @Param name formData string false "name"
+// @Param password formData string false "password"
+// @Success 200 {string} json{"code","message"}
+// @Router /user/UserLogin [post]
+func UserLogin(c *gin.Context) {
+	name := c.PostForm("name")
+	password := c.PostForm("password")
+
+	data := models.FindUserByName(name)
+	if data.Name == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "该用户还未注册",
+		})
+		return
+	}
+	slat := data.Salt
+	if data.Password != utils.ValidPassword(password, slat) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "密码或用户名错误",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "登录成功",
 	})
 }

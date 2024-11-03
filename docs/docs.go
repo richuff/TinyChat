@@ -102,6 +102,22 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/GetUserList": {
+            "get": {
+                "tags": [
+                    "用户模块"
+                ],
+                "summary": "所有用户",
+                "responses": {
+                    "200": {
+                        "description": "code\",\"message\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/UpdateUser": {
             "post": {
                 "description": "更新用户接口",
@@ -151,12 +167,27 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/getUserList": {
-            "get": {
+        "/user/UserLogin": {
+            "post": {
+                "description": "用户登录接口",
                 "tags": [
                     "用户模块"
                 ],
-                "summary": "所有用户",
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "password",
+                        "name": "password",
+                        "in": "formData"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "code\",\"message\"}",
