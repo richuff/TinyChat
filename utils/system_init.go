@@ -2,6 +2,7 @@ package utils
 
 import (
 	"RcChat/mapper"
+	"context"
 	"fmt"
 	"github.com/spf13/viper"
 )
@@ -37,4 +38,25 @@ func InitConfig() {
 		return
 	}
 	//fmt.Println(viper.Get("mysql"))
+}
+
+const (
+	PublishKey = "websocket"
+)
+
+// Publish 发布消息到redis
+func Publish(ctx context.Context, channel string, message string) error {
+	var err error
+	fmt.Println("Publish ", message)
+	mapper.Red.Publish(ctx, channel, message)
+	return err
+}
+
+// Subscribe 从redis订阅消息
+func Subscribe(ctx context.Context, channel string) (string, error) {
+	var err error
+	sub := mapper.Red.Subscribe(ctx, channel)
+	msg, err := sub.ReceiveMessage(ctx)
+	fmt.Println("Subscribe ", msg.Payload)
+	return msg.Payload, err
 }
