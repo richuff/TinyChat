@@ -2,21 +2,31 @@ package utils
 
 import (
 	"RcChat/mapper"
-	"RcChat/models"
 	"fmt"
 	"github.com/spf13/viper"
 )
 
-func InitMysql() {
+func InitRedis() {
+	pong, err := mapper.InitRedis(viper.GetString("redis.addr"),
+		viper.GetString("redis.password"), viper.GetInt("redis.DB"), viper.GetInt("redis.poolSize"),
+		viper.GetInt("redis.minIdleConn"))
+	if err != nil {
+		fmt.Println(err)
+		return
+	} else {
+		fmt.Println(pong)
+	}
+}
 
+func InitMysql() {
 	err := mapper.InitMysql(viper.GetString("mysql.dns"))
 	if err != nil {
 		return
 	}
-	mapper.Open.AutoMigrate(&models.UserBasic{})
-	user := models.UserBasic{}
-	mapper.Open.Find(&user)
-	fmt.Println(user)
+
+	/*	user := models.UserBasic{}
+		mapper.Open.Find(&user)
+		fmt.Println(user)*/
 }
 
 func InitConfig() {
@@ -26,5 +36,5 @@ func InitConfig() {
 	if err != nil {
 		return
 	}
-	fmt.Println(viper.Get("mysql"))
+	//fmt.Println(viper.Get("mysql"))
 }
