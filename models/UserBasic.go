@@ -32,17 +32,20 @@ func (table *UserBasic) TableName() string {
 func FindUserByName(name string) UserBasic {
 	user := UserBasic{}
 	mapper.Open.Where("name = ?", name).First(&user)
+	str := fmt.Sprintf("%d", time.Now().Unix())
+	temp := utils.MD5Encode(str)
+	mapper.Open.Model(&UserBasic{}).Where("id = ?", user.ID).Update("identify", temp)
 	return user
 }
 
-func FindUserByNameAndPassword(name string, password string) UserBasic {
+/*func FindUserByNameAndPassword(name string, password string) UserBasic {
 	user := UserBasic{}
 	mapper.Open.Where("name = ? and password = ?", name, password).First(&user)
 	str := fmt.Sprintf("%d", time.Now().Unix())
 	temp := utils.MD5Encode(str)
 	mapper.Open.Model(&UserBasic{}).Where("id = ?", user.ID).Update("identify", temp)
 	return user
-}
+}*/
 
 func FindUserByPhone(phone string) UserBasic {
 	user := UserBasic{}
