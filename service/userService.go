@@ -168,25 +168,26 @@ func SendMessage(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	defer func(ws *websocket.Conn) {
-		err := ws.Close()
-		if err != nil {
-			return
-		}
-	}(ws)
 	MsgHandler(ws, c)
 }
 
 func MsgHandler(ws *websocket.Conn, c *gin.Context) {
-	msg, err := utils.Subscribe(c, utils.PublishKey)
-	if err != nil {
-		fmt.Println(err)
-		return
+	for {
+		msg, err := utils.Subscribe(c, utils.PublishKey)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		tm := time.Now().Format("2006-01-02 15:04:05")
+		m := fmt.Sprintf("[ws][%s]:[%s]", tm, msg)
+		fmt.Println(m)
+		err = ws.WriteMessage(websocket.TextMessage, []byte(m))
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
-	tm := time.Now().Format("2006-01-02 15:04:05")
-	m := fmt.Sprintf("[ws][%s]:[%s]", tm, msg)
-	err = ws.WriteMessage(websocket.TextMessage, []byte(m))
-	if err != nil {
-		fmt.Println(err)
-	}
+}
+
+func SendMsg(c *gin.Context) {
+	models.Chat(c.Writer, c.Request)
 }

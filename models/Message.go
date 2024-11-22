@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"gopkg.in/fatih/set.v0"
@@ -13,8 +14,8 @@ import (
 
 type Message struct {
 	gorm.Model
-	FromId   string `json:"from_id"`   //发送者
-	TargetId string `json:"target_id"` //接受者
+	FromId   int64  `json:"from_id"`   //发送者
+	TargetId int64  `json:"target_id"` //接受者
 	Type     string `json:"type"`      //消息来源类型 群聊 私聊 广播
 	Media    int    `json:"media"`     //消息类型 文字 图片 音频 视频
 	Content  string `json:"content"`
@@ -76,6 +77,8 @@ func Chat(wrt http.ResponseWriter, req *http.Request) {
 	go SendProc(node)
 	//完成接收逻辑
 	go RecvProc(node)
+
+	sendMsg(UserId, []byte("welcome"))
 }
 
 func RecvProc(node *Node) {
@@ -116,7 +119,7 @@ func init() {
 // 完成upd数据发送的协程
 func udRecvProc() {
 	conn, err := net.DialUDP("udp4", nil, &net.UDPAddr{
-		IP:   net.IPv4(10, 33, 56, 186),
+		IP:   net.IPv4(192, 168, 0, 255),
 		Port: 3000,
 	})
 	if err != nil {
@@ -166,6 +169,31 @@ func udSendProc() {
 }
 
 // 后端调度逻辑处理
-func dispatch(bytes []byte) {
+func dispatch(data []byte) {
+	msg := Message{}
+	err := json.Unmarshal(data, &msg)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	switch msg.Type {
+	//私信
+	case "1":
+		sendMsg(msg.TargetId, data)
+		/*	//群发
+			case "2":
+				SendGroupMsg()
+			//广播
+			case "3":
+				SendAllMsg()*/
+	}
+}
 
+func sendMsg(TargetId int64, msg []byte) {
+	lock.RLock()
+	node, ok := ClientMap[TargetId]
+	lock.RUnlock()
+	if ok {
+		node.DataQueue <- msg
+	}
 }
