@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// 小写
+// Md5Encode 小写
 func Md5Encode(data string) string {
 	h := md5.New()
 	h.Write([]byte(data))
@@ -14,17 +14,17 @@ func Md5Encode(data string) string {
 	return hex.EncodeToString(tempStr)
 }
 
-// 大写
+// MD5Encode 大写
 func MD5Encode(data string) string {
 	return strings.ToUpper(Md5Encode(data))
 }
 
-// 加密
+// MakePassword 加密
 func MakePassword(plainpwd string, salt string) string {
 	return Md5Encode(plainpwd + salt)
 }
 
-// 解密
+// ValidPassword 解密
 func ValidPassword(piainpwd string, salt string) string {
 	return Md5Encode(piainpwd + salt)
 }
