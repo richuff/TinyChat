@@ -22,12 +22,16 @@ This a project written by gin and gorm
 func main() {
 	utils.InitConfig()
 	utils.InitMysql()
+	utils.InitRedis()
 
 	r := router.Router()
-	r.Run("localhost:8080")
+	err := r.Run("localhost:8080")
+	if err != nil {
+		return
+	}
 }
 ```
 
 ## License
 
-ichu_vueapp is [MIT LICENSE](https://github.com/richu94/richu_vueapp/blob/master/LICENSE)
+Tiny-Chat is [MIT LICENSE](https://github.com/richuff/TinyChat/blob/master/LICENSE)
