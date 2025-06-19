@@ -2,17 +2,23 @@ package service
 
 import (
 	"RcChat/constant"
+	"RcChat/mapper"
 	"RcChat/models"
 	"RcChat/utils"
+	"context"
 	"fmt"
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/redis/go-redis/v9"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 )
+
+var redisSub *redis.PubSub
 
 // GetUserList
 // @Summary 所有用户
@@ -47,16 +53,14 @@ func CreateUser(c *gin.Context) {
 
 	data := models.FindUserByName(user.Name)
 	if data.Name != "" {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "该用户名已注册",
-		})
+		result := constant.NewResult().SetCode(1).SetMessage("该用户名已注册")
+		result.Success(c)
 		return
 	}
 
 	if password != repassword {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "两次输入的密码不一致",
-		})
+		result := constant.NewResult().SetCode(1).SetMessage("两次输入的密码不一致")
+		result.Success(c)
 		return
 	}
 	/*user.Password = password*/
@@ -67,9 +71,8 @@ func CreateUser(c *gin.Context) {
 	user.HeartBeatTime = time.Now()
 	user.LoginOutTime = time.Now()
 	models.CreateUser(&user)
-	c.JSON(http.StatusOK, gin.H{
-		"message": "创建成功",
-	})
+	result := constant.NewResult().SetCode(1).SetMessage("创建成功")
+	result.Success(c)
 }
 
 // DeleteUser
@@ -105,7 +108,7 @@ func UpdateUser(c *gin.Context) {
 	user := models.UserBasic{}
 	id, _ := strconv.Atoi(c.PostForm("id"))
 	user.ID = uint(id)
-	fmt.Println(id)
+	log.Println(id)
 	user.Name = c.PostForm("name")
 	user.Password = c.PostForm("password")
 	user.Email = c.PostForm("email")
@@ -113,14 +116,14 @@ func UpdateUser(c *gin.Context) {
 	_, err := govalidator.ValidateStruct(user)
 
 	if err != nil {
-		fmt.Println(err)
-		result := constant.NewResult(0, "邮箱或手机号格式错误")
-		c.JSON(http.StatusBadRequest, result.Error())
+		log.Println(err)
+		result := constant.NewResult().SetCode(0).SetMessage("邮箱或手机号格式错误")
+		result.Error(c)
 		return
 	}
 	models.UpdateUser(user)
-	result := constant.NewResult(1, "注册成功")
-	c.JSON(http.StatusOK, result.SuccessByData(user))
+	result := constant.NewResult().SetCode(1).SetMessage("注册成功")
+	result.SuccessByData(c, user)
 }
 
 // UserLogin
@@ -162,32 +165,93 @@ var UpGrade = websocket.Upgrader{
 }
 
 // SendMessage 发送消息
+//func SendMessage(c *gin.Context) {
+//	ws, err := UpGrade.Upgrade(c.Writer, c.Request, nil)
+//	if err != nil {
+//		fmt.Println(err)
+//		return
+//	}
+//	MsgHandler(ws, c)
+//}
+//func MsgHandler(ws *websocket.Conn, c *gin.Context) {
+//	for {
+//		msg, err := utils.Subscribe(c, utils.PublishKey)
+//		if err != nil {
+//			fmt.Println(err)
+//			return
+//		}
+//		tm := time.Now().Format("2006-01-02 15:04:05")
+//		m := fmt.Sprintf("[ws][%s]:[%s]", tm, msg)
+//		fmt.Println(m)
+//		err = ws.WriteMessage(websocket.TextMessage, []byte(m))
+//		if err != nil {
+//			fmt.Println(err)
+//		}
+//	}
+//}
+
+// SendMessage 处理 WebSocket 升级并启动消息处理、
 func SendMessage(c *gin.Context) {
+	redisSub = mapper.Red.Subscribe(context.Background(), utils.PublishKey)
 	ws, err := UpGrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("WebSocket upgrade error:", err)
 		return
 	}
-	MsgHandler(ws, c)
-}
-
-func MsgHandler(ws *websocket.Conn, c *gin.Context) {
-	for {
-		msg, err := utils.Subscribe(c, utils.PublishKey)
+	defer func(ws *websocket.Conn) {
+		err := ws.Close()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
+		}
+	}(ws)
+
+	go func() {
+		for {
+			msg, err := redisSub.ReceiveMessage(context.Background())
+			if err != nil {
+				log.Println("Receive message from Redis error:", err)
+				return
+			}
+			tm := time.Now().Format("2006-01-02 15:04:05")
+			m := fmt.Sprintf("[ws][%s]:[%s]", tm, msg.Payload)
+			log.Println(m)
+			err = ws.WriteMessage(websocket.TextMessage, []byte(m))
+			if err != nil {
+				log.Println("Write message to WebSocket error:", err)
+				return
+			}
+		}
+	}()
+
+	// 处理从客户端接收的消息
+	for {
+		_, p, err := ws.ReadMessage()
+		if err != nil {
+			log.Println("Read message from WebSocket error:", err)
 			return
 		}
-		tm := time.Now().Format("2006-01-02 15:04:05")
-		m := fmt.Sprintf("[ws][%s]:[%s]", tm, msg)
-		fmt.Println(m)
-		err = ws.WriteMessage(websocket.TextMessage, []byte(m))
+		message := string(p)
+		log.Println("Received message from client:", message)
+
+		// 将消息发布到 Redis 频道，以便其他客户端可以接收
+		err = mapper.Red.Publish(context.Background(), utils.PublishKey, message).Err()
 		if err != nil {
-			fmt.Println(err)
+			log.Println("Publish message to Redis error:", err)
+			return
 		}
 	}
 }
 
 func SendMsg(c *gin.Context) {
 	models.Chat(c.Writer, c.Request)
+}
+
+func SearchFriend(c *gin.Context) {
+	userId, err := strconv.ParseUint(c.Query("userId"), 10, 64)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	users := models.SearchFriend(userId)
+	utils.RespOkList(c.Writer, users, len(users))
 }

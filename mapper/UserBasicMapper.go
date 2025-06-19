@@ -2,7 +2,6 @@ package mapper
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
@@ -14,9 +13,8 @@ import (
 )
 
 var (
-	Open  *gorm.DB
-	SqlDB *sql.DB
-	Red   *redis.Client
+	Open *gorm.DB
+	Red  *redis.Client
 )
 
 func InitRedis(addr string, password string, db int, poolSize int, minIdleConns int) (string, error) {
@@ -53,7 +51,5 @@ func InitMysql(config string) (err error) {
 		fmt.Println(err)
 		return err
 	}
-	SqlDB, err = Open.DB()
-
 	return err
 }
