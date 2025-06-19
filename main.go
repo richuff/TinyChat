@@ -15,5 +15,8 @@ func main() {
 	utils.InitRedis()
 
 	r := router.Router()
-	r.Run("localhost:8080")
+	err := r.Run("localhost:8080")
+	if err != nil {
+		return
+	}
 }
