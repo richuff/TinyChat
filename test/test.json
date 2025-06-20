@@ -1,0 +1,6 @@
+{
+  "type": "1",
+  "target_id": 1,
+  "content": "Hello, WebSocket Server!",
+  "user_id":11
+}
