@@ -6,3 +6,5 @@ redis:
   DB: 0
   poolSize: 30
   minIdleConn: 30
+server:
+  port: "localhost:8080"
